@@ -11,20 +11,29 @@ def hash_to_urlsafeb64(hash):
 
 def urlsafe_to_hash(value):
     """Convert a urlsafe_b64encode'd string to and integrity.Hash object"""
-    assert isinstance(value, str), 'decodes urlsafe b64 to a Hash'
-    value = base64.urlsafe_b64decode(value.encode('ascii')).decode('utf-8')
+
+    assert isinstance(value, str) or isinstance(value, bytes), (
+        'decodes urlsafe "string" or "bytes" b64 to a Hash')
+
+    if isinstance(value, str):
+        value = value.encode('ascii')
+
+    value = base64.urlsafe_b64decode(value).decode('utf-8')
     return integrity.parse(value)[0]
 
 
-def hash_to_sri_hash(dgst, hash):
-    """Coverts a b64 encoded binary hash string to subresource_integrity.Hash"""
-    if isinstance(hash, str):
-        hash = hash.encode('ascii')
+def sri_to_hash(value):
+    """Convert an SRI encoded string to integrity.Hash."""
+    return integrity.parse(value)[0]
 
-    if isinstance(hash, bytes):
-        return integrity.Hash(dgst, hash)
+
+def hash_to_sri_hash(dgst, value):
+    """Coverts a b64 encoded binary hash string to subresource_integrity.Hash"""
+
+    if isinstance(value, bytes):
+        return integrity.Hash(dgst, value)
     else:
-        raise ValueError('hash is not a bytes or str can\'t encode')
+        raise ValueError('hash value is not a bytes or str can\'t encode')
 
 
 def hash_file(dgst, path):

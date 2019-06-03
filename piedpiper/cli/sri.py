@@ -13,7 +13,9 @@ def main():
                         action='store_true',
                         help='Assume a URL safe base64 encoded SRI: decodes to an SRI'
                              ' of format sha256-myhash')
+
     subparsers = parser.add_subparsers(help='encode or decode',
+                                       required=True,
                                        dest='command')
 
     gen = subparsers.add_parser('generate')
@@ -42,13 +44,14 @@ def main():
         if opts.url_safe:
             claimed = sritool.urlsafe_to_hash(opts.sri)
         else:
-            claimed = opts.sri
+            claimed = sritool.sri_to_hash(opts.sri)
+
         real = sritool.generate_sri(opts.file, claimed.algorithm)
 
         print(f'{str(real)}\nurlsafeb64: {sritool.hash_to_urlsafeb64(real)}')
 
         if str(real) != str(claimed):
-            print(f'{opts.file}: {str(real)} != {str(claimed)}')
+            print(f'{opts.file}: {str(real)} != {str(claimed)}', file=sys.stderr)
             sys.exit(1)
     elif opts.command == 'decode':
         print(str(sritool.urlsafe_to_hash(opts.sri)))
