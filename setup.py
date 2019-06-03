@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 from setuptools import find_packages, setup
 
-tests_require = ['pytest-cov']
+tests_require = ['pytest-cov', 'pytest-mock', 'pytest-responses']
 
 setup(name='piedpiper',
       use_scm_version=True,
@@ -20,6 +20,7 @@ setup(name='piedpiper',
         'attrdict',
         'pyyaml',
         'marshmallow',
+        'requests',
         'subresource-integrity'],
       setup_requires=['setuptools-scm'],
       extras_require={'test': tests_require},
