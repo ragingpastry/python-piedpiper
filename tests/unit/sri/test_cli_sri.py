@@ -1,16 +1,19 @@
+import os
 import pytest
 
 from piedpiper.cli import sri
 
 
+test_file = os.path.join(os.path.dirname(__file__), 'tst_file.txt')
+
 cases = [
-    (['sritool', 'generate', 'tests/tst_file.txt'],
+    (['sritool', 'generate', test_file],
      'sha256-BoZM0Ehx2L5aErZiq2qVDZaAN3vhmoN4OKCmIuN/Vy8='),
-    (['sritool', 'verify', 'tests/tst_file.txt',
+    (['sritool', 'verify', test_file,
       'sha256-BoZM0Ehx2L5aErZiq2qVDZaAN3vhmoN4OKCmIuN/Vy8='],
      'sha256-BoZM0Ehx2L5aErZiq2qVDZaAN3vhmoN4OKCmIuN/Vy8=\n'
      'urlsafeb64: c2hhMjU2LUJvWk0wRWh4Mkw1YUVyWmlxMnFWRFphQU4zdmhtb040T0tDbUl1Ti9WeTg9'),
-    (['sritool', '--url-safe', 'verify', 'tests/tst_file.txt',
+    (['sritool', '--url-safe', 'verify', test_file,
       'c2hhMjU2LUJvWk0wRWh4Mkw1YUVyWmlxMnFWRFphQU4zdmhtb040T0tDbUl1Ti9WeTg9'],
      'sha256-BoZM0Ehx2L5aErZiq2qVDZaAN3vhmoN4OKCmIuN/Vy8=\n'
      'urlsafeb64: c2hhMjU2LUJvWk0wRWh4Mkw1YUVyWmlxMnFWRFphQU4zdmhtb040T0tDbUl1Ti9WeTg9'
@@ -22,7 +25,7 @@ cases = [
 
 fail_cases = [
     (['sritool'], 'error: the following arguments are required'),
-    (['sritool', 'verify', 'tests/tst_file.txt',
+    (['sritool', 'verify', test_file,
       'sha256-CXS0O7OjESVro+DicbpxpvZPeBy2jTJ/CuQJnScABWs='],
      '!='
      ),

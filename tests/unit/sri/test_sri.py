@@ -1,8 +1,12 @@
 import base64
+import os
 
 from pytest import raises
 
-from piedpiper import sritool
+from piedpiper import sri as sritool
+
+
+test_file = os.path.join(os.path.dirname(__file__), 'tst_file.txt')
 
 
 def test_hash_to_urlsafeb64(sri_obj, sri_urlsafe):
@@ -54,18 +58,18 @@ def test_hash_to_sri_hash_str_input(sri_obj, sri):
 
 def test_hash_file():
 
-    assert isinstance(sritool.hash_file('sha256', 'tests/tst_file.txt'), bytes)
+    assert isinstance(sritool.hash_file('sha256', test_file), bytes)
 
 
 def test_hash_file_bad_path():
 
     with raises(IOError):
-        sritool.hash_file('sha256', 'tests/tst_none.txt')
+        sritool.hash_file('sha256', './tst_none.txt')
 
 
 def test_hash_file_bad_dgst():
     with raises(ValueError):
-        sritool.hash_file('sha3245455', 'tests/tst_file.txt')
+        sritool.hash_file('sha3245455', test_file)
 
 
 def test_b64_hash(sri):
@@ -76,14 +80,14 @@ def test_b64_hash(sri):
 
 def test_generate_sri():
     hash = 'sha256-BoZM0Ehx2L5aErZiq2qVDZaAN3vhmoN4OKCmIuN/Vy8='
-    assert str(sritool.generate_sri('tests/tst_file.txt',
+    assert str(sritool.generate_sri(test_file,
                                     dgst='sha256',
                                     url_safe=False)) == hash
 
 
 def test_generate_sri_url_safe():
     hash = 'c2hhMjU2LUJvWk0wRWh4Mkw1YUVyWmlxMnFWRFphQU4zdmhtb040T0tDbUl1Ti9WeTg9'
-    assert str(sritool.generate_sri('tests/tst_file.txt',
+    assert str(sritool.generate_sri(test_file,
                                     dgst='sha256',
                                     url_safe=True)) == hash
 

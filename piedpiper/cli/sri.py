@@ -1,7 +1,7 @@
 import argparse
 import hashlib
 import sys
-import piedpiper.sritool as sritool
+import piedpiper.sri as sritool
 
 
 def main():
