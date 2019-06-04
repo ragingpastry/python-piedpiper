@@ -1,4 +1,6 @@
 # python-piedpiper
+[![Build Status](https://travis-ci.com/AFCYBER-DREAM/python-piedpiper.svg?branch=master)](https://travis-ci.com/AFCYBER-DREAM/python-piedpiper)
+
 Python library for common piedpiper functions
 
 
