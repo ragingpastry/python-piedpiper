@@ -1,12 +1,14 @@
 import logging
 import pytest
 import requests
+import responses
 
 from piedpiper.gman import client
 from piedpiper.gman.exceptions import TaskError
 
 
-def test_debug(caplog, responses):
+@responses.activate
+def test_debug(caplog):
     with caplog.at_level(logging.DEBUG):
         responses.add(
             responses.POST, "http://gman_url/task", json={"task": {"task_id": "1234"}}
@@ -18,7 +20,8 @@ def test_debug(caplog, responses):
         assert "Requesting new taskID" in caplog.text
 
 
-def test_request_new_task_id(responses):
+@responses.activate
+def test_request_new_task_id():
     responses.add(
         responses.POST, "http://gman_url/task", json={"task": {"task_id": "1234"}}
     )
@@ -30,7 +33,8 @@ def test_request_new_task_id(responses):
     assert resp == {"task": {"task_id": "1234"}}
 
 
-def test_request_new_task_id_with_thread_id(responses):
+@responses.activate
+def test_request_new_task_id_with_thread_id():
     responses.add(
         responses.POST, "http://gman_url/task", json={"task": {"task_id": "1234"}}
     )
@@ -69,7 +73,8 @@ def test_request_new_task_id_exception(mock_post_request_exception):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_request_new_task_id_failure(response_code, responses):
+@responses.activate
+def test_request_new_task_id_failure(response_code):
     responses.add(responses.POST, "http://gman_url/task", status=response_code)
     with pytest.raises(requests.exceptions.HTTPError):
         client.request_new_task_id(
@@ -77,7 +82,8 @@ def test_request_new_task_id_failure(response_code, responses):
         )
 
 
-def test_wait_for_task_id(responses, task_event_list):
+@responses.activate
+def test_wait_for_task_id(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", json=task_event_list
     )
@@ -89,7 +95,8 @@ def test_wait_for_task_id(responses, task_event_list):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_wait_for_task_id_fails_request(response_code, responses):
+@responses.activate
+def test_wait_for_task_id_fails_request(response_code):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", status=response_code
     )
@@ -106,7 +113,8 @@ def test_wait_for_task_id_request_exception(mock_get_request_exception):
         )
 
 
-def test_wait_for_task_id_times_out(responses, task_event_list):
+@responses.activate
+def test_wait_for_task_id_times_out(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", json=task_event_list
     )
@@ -116,7 +124,8 @@ def test_wait_for_task_id_times_out(responses, task_event_list):
         )
 
 
-def test_wait_for_task_id_task_fails(responses, task_event_list_failures):
+@responses.activate
+def test_wait_for_task_id_task_fails(task_event_list_failures):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", json=task_event_list_failures
     )
@@ -126,7 +135,8 @@ def test_wait_for_task_id_task_fails(responses, task_event_list_failures):
         )
 
 
-def test_update_task_id(responses):
+@responses.activate
+def test_update_task_id():
     task_event = {
         "message": "blank message",
         "status": "running",
@@ -155,7 +165,8 @@ def test_update_task_id(responses):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_update_task_id_fails_request(response_code, responses):
+@responses.activate
+def test_update_task_id_fails_request(response_code):
     responses.add(responses.PUT, "http://gman_url/task/1234", status=response_code)
     with pytest.raises(requests.exceptions.HTTPError):
         client.update_task_id(
@@ -176,7 +187,8 @@ def test_update_task_id_request_exception(mock_put_request_exception):
         )
 
 
-def test_get_task_id_events(responses, task_event_list):
+@responses.activate
+def test_get_task_id_events(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", json=task_event_list
     )
@@ -186,7 +198,8 @@ def test_get_task_id_events(responses, task_event_list):
     assert resp == task_event_list
 
 
-def test_get_task_id_events_query_filter_returns_none(responses, task_event_list):
+@responses.activate
+def test_get_task_id_events_query_filter_returns_none(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", json=task_event_list
     )
@@ -198,7 +211,8 @@ def test_get_task_id_events_query_filter_returns_none(responses, task_event_list
     assert not len(resp)
 
 
-def test_get_task_id_events_returns_one_item(task_event_list, responses):
+@responses.activate
+def test_get_task_id_events_returns_one_item(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", json=task_event_list
     )
@@ -211,7 +225,8 @@ def test_get_task_id_events_returns_one_item(task_event_list, responses):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_get_task_id_events_fails_request(response_code, responses):
+@responses.activate
+def test_get_task_id_events_fails_request(response_code):
     responses.add(
         responses.GET, "http://gman_url/task/1234/events", status=response_code
     )
@@ -225,13 +240,15 @@ def test_get_task_id_events_request_exception(mock_get_request_exception):
         client.get_task_id_events(task_id="1234", gman_url="http://gman_url")
 
 
-def test_get_thread_id_tasks(task_list, responses):
+@responses.activate
+def test_get_thread_id_tasks(task_list):
     responses.add(responses.GET, "http://gman_url/thread/1234", json=task_list)
     resp = client.get_thread_id_tasks(thread_id="1234", gman_url="http://gman_url")
     assert len(resp)
 
 
-def test_get_thread_id_tasks_query_filter_returns_one(task_list, responses):
+@responses.activate
+def test_get_thread_id_tasks_query_filter_returns_one(task_list):
     responses.add(responses.GET, "http://gman_url/thread/1234", json=task_list)
     resp = client.get_thread_id_tasks(
         thread_id="1234",
@@ -242,7 +259,8 @@ def test_get_thread_id_tasks_query_filter_returns_one(task_list, responses):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_get_thread_id_tasks_fails_request(response_code, responses):
+@responses.activate
+def test_get_thread_id_tasks_fails_request(response_code):
     responses.add(responses.GET, "http://gman_url/thread/1234", status=response_code)
     with pytest.raises(requests.exceptions.HTTPError):
         client.get_thread_id_tasks(thread_id="1234", gman_url="http://gman_url")
@@ -253,7 +271,8 @@ def test_get_thread_id_tasks_request_exception(mock_get_request_exception):
         client.get_thread_id_tasks(thread_id="1234", gman_url="http://gman_url")
 
 
-def test_get_thread_id_events(task_event_list, responses):
+@responses.activate
+def test_get_thread_id_events(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/thread/1234/events", json=task_event_list
     )
@@ -261,7 +280,8 @@ def test_get_thread_id_events(task_event_list, responses):
     assert resp
 
 
-def test_get_thread_id_events_returns_one_item(task_event_list, responses):
+@responses.activate
+def test_get_thread_id_events_returns_one_item(task_event_list):
     responses.add(
         responses.GET, "http://gman_url/thread/1234/events", json=task_event_list
     )
@@ -274,7 +294,8 @@ def test_get_thread_id_events_returns_one_item(task_event_list, responses):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_get_thread_id_events_fails_request(response_code, responses):
+@responses.activate
+def test_get_thread_id_events_fails_request(response_code):
     responses.add(
         responses.GET, "http://gman_url/thread/1234/events", status=response_code
     )
@@ -287,7 +308,8 @@ def test_get_thread_id_events_request_exception(mock_get_request_exception):
         client.get_thread_id_events(thread_id="1234", gman_url="http://gman_url")
 
 
-def test_wait_for_thread_id_complete(responses):
+@responses.activate
+def test_wait_for_thread_id_complete():
     thread_status_headers = {
         "x-gman-tasks-running": "0",
         "x-gman-tasks-completed": "1",
@@ -304,7 +326,8 @@ def test_wait_for_thread_id_complete(responses):
     assert resp
 
 
-def test_wait_for_thread_id_complete_has_failures(responses):
+@responses.activate
+def test_wait_for_thread_id_complete_has_failures():
     thread_status_headers = {
         "x-gman-tasks-running": "0",
         "x-gman-tasks-completed": "1",
@@ -317,7 +340,8 @@ def test_wait_for_thread_id_complete_has_failures(responses):
         client.wait_for_thread_id_complete(thread_id="1234", gman_url="http://gman_url")
 
 
-def test_wait_for_thread_id_complete_times_out(responses):
+@responses.activate
+def test_wait_for_thread_id_complete_times_out():
     thread_status_headers = {
         "x-gman-tasks-running": "1",
         "x-gman-tasks-completed": "0",
@@ -333,7 +357,8 @@ def test_wait_for_thread_id_complete_times_out(responses):
 
 
 @pytest.mark.parametrize("response_code", [400, 500])
-def test_wait_for_thread_id_complete_fails_request(response_code, responses):
+@responses.activate
+def test_wait_for_thread_id_complete_fails_request(response_code):
     responses.add(responses.HEAD, "http://gman_url/thread/1234", status=response_code)
     with pytest.raises(requests.exceptions.HTTPError):
         client.wait_for_thread_id_complete(thread_id="1234", gman_url="http://gman_url")
