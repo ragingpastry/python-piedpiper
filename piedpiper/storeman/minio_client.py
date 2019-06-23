@@ -24,7 +24,7 @@ class MinioClient(BaseStorageClient):
         if scheme != "minio":
             raise ValueError(f"Unknown URI scheme: {scheme}")
         bucket_name = urlparse(uri).path.split("/")[1]
-        object_name = "".join(urlparse(uri).path.split("/")[2:])
+        object_name = "/".join(urlparse(uri).path.split("/")[2:])
 
         return self.storage_client.fget_object(bucket_name, object_name, file_path)
 
