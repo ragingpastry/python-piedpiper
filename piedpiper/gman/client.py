@@ -215,20 +215,21 @@ def wait_for_thread_id_complete(thread_id=None, gman_url=None, retry_max=10):
             log.debug(f"Checking status of thread {thread_id}")
             r = requests.head(f"{gman_url}/thread/{thread_id}")
             r.raise_for_status()
-            running, completed, failed = [
+            running, completed, pending, failed = [
                 r.headers.get(key)
                 for key in [
                     "x-gman-tasks-running",
                     "x-gman-tasks-completed",
+                    "x-gman-tasks-pending",
                     "x-gman-tasks-failed",
                 ]
             ]
             if int(failed) > 0:
                 raise TaskError(f"Thread {thread_id} has failures")
-            elif int(running) > 0:
+            elif (int(running) + int(pending)) > 0:
                 retries += 1
                 time.sleep(1)
-            elif int(running) == 0 and int(completed) > 0:
+            elif (int(running) + int(pending)) == 0 and int(completed) > 0:
                 return True
         except requests.exceptions.HTTPError as e:
             raise requests.exceptions.HTTPError(
