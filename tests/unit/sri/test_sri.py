@@ -3,7 +3,7 @@ import os
 
 from pytest import raises
 
-from piedpiper import sri as sritool
+from piperci import sri as sritool
 
 
 test_file = os.path.join(os.path.dirname(__file__), 'tst_file.txt')
