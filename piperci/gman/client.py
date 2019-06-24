@@ -3,7 +3,7 @@ import logging
 import requests
 import time
 
-from piedpiper.gman.exceptions import TaskError
+from piperci.gman.exceptions import TaskError
 
 log = logging.getLogger(__name__)
 

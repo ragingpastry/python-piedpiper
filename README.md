@@ -1,7 +1,7 @@
-# python-piedpiper
-[![Build Status](https://travis-ci.com/AFCYBER-DREAM/python-piedpiper.svg?branch=master)](https://travis-ci.com/AFCYBER-DREAM/python-piedpiper)
+# python-piperci
+[![Build Status](https://travis-ci.com/AFCYBER-DREAM/python-piperci.svg?branch=master)](https://travis-ci.com/AFCYBER-DREAM/python-piperci)
 
-Python library for common piedpiper functions
+Python library for common piperci functions
 
 
 ## SRI CLI Tools

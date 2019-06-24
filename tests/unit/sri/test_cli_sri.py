@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from piedpiper.cli import sri
+from piperci.cli import sri
 
 
 test_file = os.path.join(os.path.dirname(__file__), 'tst_file.txt')

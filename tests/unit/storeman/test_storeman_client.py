@@ -1,4 +1,4 @@
-from piedpiper.storeman.client import storage_client
+from piperci.storeman.client import storage_client
 
 from minio import Minio
 import os

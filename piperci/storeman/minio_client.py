@@ -1,4 +1,4 @@
-from piedpiper.storeman.client import BaseStorageClient
+from piperci.storeman.client import BaseStorageClient
 
 from minio import Minio
 from minio.error import BucketAlreadyOwnedByYou, BucketAlreadyExists

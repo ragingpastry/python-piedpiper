@@ -3,8 +3,8 @@ import pytest
 import requests
 import responses
 
-from piedpiper.gman import client
-from piedpiper.gman.exceptions import TaskError
+from piperci.gman import client
+from piperci.gman.exceptions import TaskError
 
 
 @responses.activate

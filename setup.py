@@ -9,9 +9,9 @@ tests_require = [
 ]
 
 setup(
-    name="piedpiper",
+    name="piperci",
     use_scm_version=True,
-    description="Libraries and CLI tools to interact with piedpiper",
+    description="Libraries and CLI tools to interact with piperci",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
@@ -35,5 +35,5 @@ setup(
     setup_requires=["setuptools-scm"],
     extras_require={"test": tests_require},
     tests_require=tests_require,
-    entry_points={"console_scripts": ["sritool=piedpiper.cli.sri:main"]},
+    entry_points={"console_scripts": ["sritool=piperci.cli.sri:main"]},
 )

@@ -91,26 +91,26 @@ def task_event_list_failures():
 @pytest.fixture
 def mock_get_request_exception(mocker):
     mocker.patch(
-        "piedpiper.gman.client.requests.get", side_effect=requests.RequestException
+        "piperci.gman.client.requests.get", side_effect=requests.RequestException
     )
 
 
 @pytest.fixture
 def mock_head_request_exception(mocker):
     mocker.patch(
-        "piedpiper.gman.client.requests.head", side_effect=requests.RequestException
+        "piperci.gman.client.requests.head", side_effect=requests.RequestException
     )
 
 
 @pytest.fixture
 def mock_post_request_exception(mocker):
     mocker.patch(
-        "piedpiper.gman.client.requests.post", side_effect=requests.RequestException
+        "piperci.gman.client.requests.post", side_effect=requests.RequestException
     )
 
 
 @pytest.fixture
 def mock_put_request_exception(mocker):
     mocker.patch(
-        "piedpiper.gman.client.requests.put", side_effect=requests.RequestException
+        "piperci.gman.client.requests.put", side_effect=requests.RequestException
     )

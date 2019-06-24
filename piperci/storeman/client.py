@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 def storage_client(storage_type, **kwargs):
     if storage_type == "minio":
-        from piedpiper.storeman.minio_client import MinioClient
+        from piperci.storeman.minio_client import MinioClient
 
         return MinioClient(**kwargs)
     else:
