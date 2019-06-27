@@ -44,6 +44,19 @@ def test_request_new_task_id_with_thread_id():
     assert resp == {"task": {"task_id": "1234"}}
 
 
+@responses.activate
+def test_request_new_task_id_with_status_received():
+    responses.add(
+        responses.POST, "http://gman_url/task", json={"task": {"task_id": "1234"}}
+    )
+    resp = client.request_new_task_id(
+        "1234", "http://gman_url", "test", "tests", status="received", thread_id="1234", parent_id="1234"
+    )
+    assert 'parent_id' in responses.calls[0].request.body
+    assert 'thread_id' in responses.calls[0].request.body
+    assert resp == {"task": {"task_id": "1234"}}
+
+
 def test_request_new_task_id_invalid_status(mock_post_request_exception):
     with pytest.raises(ValueError):
         client.request_new_task_id(
@@ -65,7 +78,21 @@ def test_request_new_task_id_no_thread_id_with_received_status(
         )
 
 
-def test_request_new_task_id_exception(mock_post_request_exception):
+def test_request_new_task_id_no_parent_id_with_received_status():
+    with pytest.raises(ValueError):
+        client.request_new_task_id(
+            "1234", "http://gman_url", "test", "tests", status="received", thread_id="1234"
+        )
+
+
+def test_request_new_task_id_no_thread_id_with_parent_id_with_received_status():
+    with pytest.raises(ValueError):
+        client.request_new_task_id(
+            "1234", "http://gman_url", "test", "tests", status="received", parent_id="1234"
+        )
+
+
+def test_request_new_task_id_exception():
     with pytest.raises(requests.exceptions.RequestException):
         client.request_new_task_id(
             "1234", "http://gman_url", "test", "tests", status="started"

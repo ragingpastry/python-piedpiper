@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 def request_new_task_id(
-    run_id=None, gman_url=None, project=None, caller=None, status=None, thread_id=None
+    run_id=None, gman_url=None, project=None, caller=None, status=None, thread_id=None, parent_id=None
 ):
     """
     Request a new TaskID from GMan, associated with a given RunID
@@ -22,12 +22,15 @@ def request_new_task_id(
     always be "started"
     :param: thread_id: The thread_id that this task should be associated with.
     This will mainly be used by executors who need to tie their task_id to the
-    task_id of it's parent.
+    main task thread.
+    :param: parent_id: The parent_id of the task which was delegated to this task.
+    This is mainly used by executors who need to tie their task_id to the task
+    of it's parent.
     :return: JSON resposne from GMan
     """
     if not status or (status != "started" and status != "received"):
         raise ValueError(f"Invalid status '{status}'. Must be 'received' or 'started'.")
-    if status == "received" and not thread_id:
+    if status == "received" and (not thread_id or not parent_id):
         raise ValueError(f"thread_id must be specified if status is received.")
     try:
         log.debug(f"Requesting new taskID from gman at {gman_url}")
@@ -40,6 +43,8 @@ def request_new_task_id(
         }
         if thread_id:
             data.update({"thread_id": thread_id})
+        if parent_id:
+            data.update({"parent_id": parent_id})
         r = requests.post(f"{gman_url}/task", data=json.dumps(data))
         r.raise_for_status()
     except requests.exceptions.HTTPError as e:
