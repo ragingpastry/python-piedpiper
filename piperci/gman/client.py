@@ -8,8 +8,160 @@ from piperci.gman.exceptions import TaskError
 log = logging.getLogger(__name__)
 
 
+def _get_run_id_events(run_id=None, gman_url=None, query_filter=None):
+    """
+    Get a list of run_id events from gman.
+    Optionally pass a query_fitler lamda expression to filter these events.
+    For example, to return a list of all failed events for a particular runID
+    _get_run_id_events(
+      run_id='1234', gman_url=url, query_filter=lambda x: x.get('status') == 'failed'
+    )
+    :param run_id: run_id to query as a string
+    :param gman_url: GMan endpoint as as string
+    :param query_filter: lambda expression
+    :return: List of events
+    """
+    try:
+        r = requests.get(f"{gman_url}/run/{run_id}/events")
+        r.raise_for_status()
+        if query_filter:
+            return list(filter(query_filter, r.json()))
+        else:
+            return r.json()
+    except requests.exceptions.HTTPError as e:
+        raise requests.exceptions.HTTPError(
+            f"Gman returned with a bad status code. \n\n{e}"
+        )
+    except requests.exceptions.RequestException as e:
+        raise requests.exceptions.RequestException(
+            f"Failed to get runID events for run_id {run_id}. \n\n{e}"
+        )
+
+
+def _get_task_id_events(task_id=None, gman_url=None, query_filter=None):
+    """
+    Get a list of taskID events from gman.
+    Optionally pass a query_fitler lamda expression to filter these events.
+    For example, to return a list of all failed events for a particular taskID
+    get_task_id_events(
+      task_id='1234', gman_url=url, query_filter=lambda x: x.get('status') == 'failed'
+    )
+    :param task_id: taskID to query as a string
+    :param gman_url: GMan endpoint as as string
+    :param query_filter: lambda expression
+    :return: List of events
+    """
+    try:
+        r = requests.get(f"{gman_url}/task/{task_id}/events")
+        r.raise_for_status()
+        if query_filter:
+            return list(filter(query_filter, r.json()))
+        else:
+            return r.json()
+    except requests.exceptions.HTTPError as e:
+        raise requests.exceptions.HTTPError(
+            f"Gman returned with a bad status code. \n\n{e}"
+        )
+    except requests.exceptions.RequestException as e:
+        raise requests.exceptions.RequestException(
+            f"Failed to get taskID events for task_id {task_id}. \n\n{e}"
+        )
+
+
+def _get_thread_id_events(thread_id=None, gman_url=None, query_filter=None):
+    """
+    Get list of all events for a given thread_id, optionally filtered by
+    a lambda expression.
+    :param thread_id: Thread ID to query for as a string.
+    :param gman_url:  GMan endpoint as a string.
+    :param query_filter: Lambda expression
+    :return: List of task events
+    """
+    try:
+        r = requests.get(f"{gman_url}/thread/{thread_id}/events")
+        r.raise_for_status()
+        if query_filter:
+            return list(filter(query_filter, r.json()))
+        else:
+            return r.json()
+    except requests.exceptions.HTTPError as e:
+        raise requests.exceptions.HTTPError(
+            f"Gman returned with a bad status code. \n\n{e}"
+        )
+    except requests.exceptions.RequestException as e:
+        raise requests.exceptions.RequestException(
+            f"Failed to get tasks for thread_id {thread_id}. \n\n{e}"
+        )
+
+
+def get_events(
+    gman_url=None, thread_id=None, task_id=None, run_id=None, query_filter=None
+):
+    """
+    Get list of all events for a given thread_id, run_id, or task_id, optionally
+    filtered by a lambda expression.
+    :param gman_url:  GMan endpoint as a string.
+    :param thread_id: (Optional) Thread ID to query for as a string.
+    :param task_id: (Optional) Task ID to query for as a string.
+    :param run_id: (Optional) Run ID to query for as a string.
+    :param query_filter: Lambda expression
+    :return: List of task events
+    """
+    mutually_exclusive_args = [arg for arg in [thread_id, run_id, task_id] if arg]
+    if len(mutually_exclusive_args) > 1:
+        raise ValueError(
+            f"Multiple exclusive arguments given. You must pass exactly one of "
+            f"thread_id, run_id, and task_id."
+        )
+    if thread_id:
+        return _get_thread_id_events(
+            thread_id=thread_id, gman_url=gman_url, query_filter=query_filter
+        )
+    elif run_id:
+        return _get_run_id_events(
+            run_id=run_id, gman_url=gman_url, query_filter=query_filter
+        )
+    elif task_id:
+        return _get_task_id_events(
+            task_id=task_id, gman_url=gman_url, query_filter=query_filter
+        )
+    else:
+        raise ValueError(f"One of thread_id, run_id, or task_id must be provided.")
+
+
+def get_thread_id_tasks(thread_id=None, gman_url=None, query_filter=None):
+    """
+    Get a list of tasks associated with the given thread_id
+    :param thread_id: The thread_id to query with as a sring
+    :param gman_url: The GMan endpoint as a string
+    :param query_filter: lambda expression
+    :return: List of tasks associated with thread_id
+    """
+    try:
+        r = requests.get(f"{gman_url}/thread/{thread_id}")
+        r.raise_for_status()
+        if query_filter:
+            return list(filter(query_filter, r.json()))
+        else:
+            return r.json()
+    except requests.exceptions.HTTPError as e:
+        raise requests.exceptions.HTTPError(
+            f"Gman returned with a bad status code. \n\n{e}"
+        )
+    except requests.exceptions.RequestException as e:
+        raise requests.exceptions.RequestException(
+            f"Failed to get tasks for thread_id {thread_id}. \n\n{e}"
+        )
+
+
 def request_new_task_id(
-    run_id=None, gman_url=None, project=None, caller=None, status=None, thread_id=None, parent_id=None
+    run_id=None,
+    gman_url=None,
+    project=None,
+    caller=None,
+    status=None,
+    thread_id=None,
+    parent_id=None,
 ):
     """
     Request a new TaskID from GMan, associated with a given RunID
@@ -58,6 +210,30 @@ def request_new_task_id(
     return r.json()
 
 
+def update_task_id(task_id=None, gman_url=None, status=None, message=None):
+    """
+    Updates a taskID status and/or message
+    :param task_id: TaskID to update as a string
+    :param gman_url: GMan endpoint as a string
+    :param status: The status to apply to the task
+    :param message: The message to apply to the task
+    :return: JSON response from gman
+    """
+    try:
+        data = {"message": message, "status": status}
+        r = requests.put(f"{gman_url}/task/{task_id}", data=json.dumps(data))
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        raise requests.exceptions.HTTPError(
+            f"GMan returned with a bad status code. \n\n{e}"
+        )
+    except requests.exceptions.RequestException as e:
+        raise requests.exceptions.RequestException(
+            f"Failed to update taskID {task_id}. \n\n{e}"
+        )
+    return r.json()
+
+
 def wait_for_task_status(task_id=None, status=None, gman_url=None, retry_max=10):
     """
     Returns true if given task_id has a status of the given status. If retry_max
@@ -96,113 +272,7 @@ def wait_for_task_status(task_id=None, status=None, gman_url=None, retry_max=10)
             raise requests.exceptions.RequestException(
                 f"Failed to check status of task. \n\n{e}"
             )
-
     raise TimeoutError(f"Checking task status timeout for task {task_id}")
-
-
-def update_task_id(task_id=None, gman_url=None, status=None, message=None):
-    """
-    Updates a taskID status and/or message
-    :param task_id: TaskID to update as a string
-    :param gman_url: GMan endpoint as a string
-    :param status: The status to apply to the task
-    :param message: The message to apply to the task
-    :return: JSON response from gman
-    """
-    try:
-        data = {"message": message, "status": status}
-        r = requests.put(f"{gman_url}/task/{task_id}", data=json.dumps(data))
-        r.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        raise requests.exceptions.HTTPError(
-            f"GMan returned with a bad status code. \n\n{e}"
-        )
-    except requests.exceptions.RequestException as e:
-        raise requests.exceptions.RequestException(
-            f"Failed to update taskID {task_id}. \n\n{e}"
-        )
-    return r.json()
-
-
-def get_task_id_events(task_id=None, gman_url=None, query_filter=None):
-    """
-    Get a list of taskID events from gman.
-    Optionally pass a query_fitler lamda expression to filter these events.
-    For example, to return a list of all failed events for a particular taskID
-    get_task_id_events(
-      task_id='1234', gman_url=url, query_filter=lambda x: x.get('status') == 'failed'
-    )
-    :param task_id: taskID to query as a string
-    :param gman_url: GMan endpoint as as string
-    :param query_filter: lambda expression
-    :return: List of events
-    """
-    try:
-        r = requests.get(f"{gman_url}/task/{task_id}/events")
-        r.raise_for_status()
-        if query_filter:
-            return list(filter(query_filter, r.json()))
-        else:
-            return r.json()
-    except requests.exceptions.HTTPError as e:
-        raise requests.exceptions.HTTPError(
-            f"Gman returned with a bad status code. \n\n{e}"
-        )
-    except requests.exceptions.RequestException as e:
-        raise requests.exceptions.RequestException(
-            f"Failed to get taskID events for task_id {task_id}. \n\n{e}"
-        )
-
-
-def get_thread_id_tasks(thread_id=None, gman_url=None, query_filter=None):
-    """
-    Get a list of tasks associated with the given thread_id
-    :param thread_id: The thread_id to query with as a sring
-    :param gman_url: The GMan endpoint as a string
-    :param query_filter: lambda expression
-    :return: List of tasks associated with thread_id
-    """
-    try:
-        r = requests.get(f"{gman_url}/thread/{thread_id}")
-        r.raise_for_status()
-        if query_filter:
-            return list(filter(query_filter, r.json()))
-        else:
-            return r.json()
-    except requests.exceptions.HTTPError as e:
-        raise requests.exceptions.HTTPError(
-            f"Gman returned with a bad status code. \n\n{e}"
-        )
-    except requests.exceptions.RequestException as e:
-        raise requests.exceptions.RequestException(
-            f"Failed to get tasks for thread_id {thread_id}. \n\n{e}"
-        )
-
-
-def get_thread_id_events(thread_id=None, gman_url=None, query_filter=None):
-    """
-    Get list of all events for a given thread_id, optionally filtered by
-    a lambda expression.
-    :param thread_id: Thread ID to query for as a string.
-    :param gman_url:  GMan endpoint as a string.
-    :param query_filter: Lambda expression
-    :return: List of task events
-    """
-    try:
-        r = requests.get(f"{gman_url}/thread/{thread_id}/events")
-        r.raise_for_status()
-        if query_filter:
-            return list(filter(query_filter, r.json()))
-        else:
-            return r.json()
-    except requests.exceptions.HTTPError as e:
-        raise requests.exceptions.HTTPError(
-            f"Gman returned with a bad status code. \n\n{e}"
-        )
-    except requests.exceptions.RequestException as e:
-        raise requests.exceptions.RequestException(
-            f"Failed to get tasks for thread_id {thread_id}. \n\n{e}"
-        )
 
 
 def wait_for_thread_id_complete(thread_id=None, gman_url=None, retry_max=10):
