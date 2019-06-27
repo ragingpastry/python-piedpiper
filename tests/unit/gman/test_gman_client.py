@@ -313,6 +313,7 @@ def test_wait_for_thread_id_complete():
     thread_status_headers = {
         "x-gman-tasks-running": "0",
         "x-gman-tasks-completed": "1",
+        "x-gman-tasks-pending": "0",
         "x-gman-tasks-failed": "0",
     }
 
@@ -345,6 +346,40 @@ def test_wait_for_thread_id_complete_times_out():
     thread_status_headers = {
         "x-gman-tasks-running": "1",
         "x-gman-tasks-completed": "0",
+        "x-gman-tasks-failed": "0",
+    }
+    responses.add(
+        responses.HEAD, "http://gman_url/thread/1234", headers=thread_status_headers
+    )
+    with pytest.raises(TimeoutError):
+        client.wait_for_thread_id_complete(
+            thread_id="1234", gman_url="http://gman_url", retry_max=2
+        )
+
+
+@responses.activate
+def test_wait_for_thread_id_complete_times_out_on_pending():
+    thread_status_headers = {
+        "x-gman-tasks-running": "0",
+        "x-gman-tasks-completed": "1",
+        "x-gman-tasks-pending": "1",
+        "x-gman-tasks-failed": "0",
+    }
+    responses.add(
+        responses.HEAD, "http://gman_url/thread/1234", headers=thread_status_headers
+    )
+    with pytest.raises(TimeoutError):
+        client.wait_for_thread_id_complete(
+            thread_id="1234", gman_url="http://gman_url", retry_max=2
+        )
+
+
+@responses.activate
+def test_wait_for_thread_id_complete_times_out_invalid_headers():
+    thread_status_headers = {
+        "x-gman-tasks-running": "0",
+        "x-gman-tasks-completed": "0",
+        "x-gman-tasks-pending": "0",
         "x-gman-tasks-failed": "0",
     }
     responses.add(
